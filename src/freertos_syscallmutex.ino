@@ -77,27 +77,31 @@ void setup()
    xTaskCreate(loop7, "loop7", STACK_SIZE, NULL, 1, &loop7Handle);
    vTaskCoreAffinitySet(loop7Handle, CORE_1);
 }
-static int _loop[8];
+static int _loop0[8];
+static int _loop1[8];
 
 void loop()
 {
+  vTaskDelay(1000);
   while (1)
   {
-    _loop[0]++;
+    rp2040.cpuid() == 0 ? _loop0[0]++ : _loop1[0]++;
     digitalWrite(LED_BUILTIN, HIGH);
     delay(500);
     digitalWrite(LED_BUILTIN, LOW);
     delay(500);
-    for (int i=0; i<8; i++) Serial.printf("%d ", _loop[i]);
+    for (int i=0; i<8; i++) Serial.printf("%d,%d ", _loop0[i],_loop1[i]);
     Serial.println("");
   }
 }
 
 void loop1()
 {
+  vTaskDelay(1000);
   while (1)
   {
-    _loop[1]++;
+    //_loop[1]++;
+    rp2040.cpuid() == 0 ? _loop0[1]++ : _loop1[1]++;
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
@@ -124,10 +128,12 @@ void loop1()
 
 void loop2(void *pvPramaters)
 {
+  vTaskDelay(1000);
   (void) pvPramaters;
   while (1)
   {
-    _loop[2]++;
+    //_loop[2]++;
+    rp2040.cpuid() == 0 ? _loop0[2]++ : _loop1[2]++;
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
@@ -146,18 +152,21 @@ void loop2(void *pvPramaters)
 
     semphrTakeConditional(useMutexOnFree, xSemaphoreFree);
     free(tmp);
-    semphrGiveConditional(useMutexOnFree, xSemaphoreFree);
-
+    semphrGiveConditional(useMutexOnFree, xSemaphoreFree); 
+    
     delay(DELAY);
   }
 }
 
 void loop3(void *pvPramaters)
 {
+  vTaskDelay(1000);
   (void) pvPramaters;
   while (1)
   {
-    _loop[3]++;
+    //_loop[3]++;
+    rp2040.cpuid() == 0 ? _loop0[3]++ : _loop1[3]++;
+
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
@@ -184,10 +193,13 @@ void loop3(void *pvPramaters)
 
 void loop4(void *pvPramaters)
 {
+  vTaskDelay(1000);
   (void) pvPramaters;
   while (1)
   {
-    _loop[4]++;
+    //_loop[4]++;
+    rp2040.cpuid() == 0 ? _loop0[4]++ : _loop1[4]++;
+
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
@@ -214,10 +226,13 @@ void loop4(void *pvPramaters)
 
 void loop5(void *pvPramaters)
 {
+  vTaskDelay(1000);
   (void) pvPramaters;
   while (1)
   {
-    _loop[5]++;
+    //_loop[5]++;
+    rp2040.cpuid() == 0 ? _loop0[5]++ : _loop1[5]++;
+
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
@@ -244,10 +259,13 @@ void loop5(void *pvPramaters)
 
 void loop6(void *pvPramaters)
 {
+  vTaskDelay(1000);
   (void) pvPramaters;
   while (1)
   {
-    _loop[6]++;
+    //_loop[6]++;
+    rp2040.cpuid() == 0 ? _loop0[6]++ : _loop1[6]++;
+
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
@@ -274,10 +292,13 @@ void loop6(void *pvPramaters)
 
 void loop7(void *pvPramaters)
 {
+  vTaskDelay(1000);
   (void) pvPramaters;
   while (1)
   {
-    _loop[7]++;
+    //_loop[7]++;
+    rp2040.cpuid() == 0 ? _loop0[7]++ : _loop1[7]++;
+
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
