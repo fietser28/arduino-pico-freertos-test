@@ -60,6 +60,8 @@ void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
 
+  vTaskDelay(2000); // Just a wait for serial so I don't miss the first lines.
+
   xSemaphoreMalloc = xSemaphoreCreateMutex();
   // xSemaphoreRealloc = xSemaphoreCreateMutex();
   // xSemaphoreFree = xSemaphoreCreateMutex();
@@ -92,6 +94,11 @@ void loop()
     delay(500);
     for (int i=0; i<8; i++) Serial.printf("%d,%d ", _loop0[i],_loop1[i]);
     Serial.println("");
+
+    if (_loop0[0] == 10) {
+        // This causes all threads fixed on core1 to stop running in about 50% of times tried.
+        vTaskCoreAffinitySet(loop2Handle, CORE_1);
+    }
   }
 }
 
