@@ -5,6 +5,8 @@
 #include <task.h>
 #include <semphr.h>
 #define DELAY 1
+#define BUSY_MALLOC 0
+#define BUSY_LOOP   1
 #define SERIAL_DEBUG Serial1
 #define STACK_SIZE 512
 #define CORE_0 (1 << 0)
@@ -56,6 +58,8 @@ void loop5(void *pvPramaters);
 void loop6(void *pvPramaters);
 void loop7(void *pvPramaters);
 
+void busyLoop();
+
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -95,9 +99,11 @@ void loop()
     for (int i=0; i<8; i++) Serial.printf("%d,%d ", _loop0[i],_loop1[i]);
     Serial.println("");
 
-    if (_loop0[0] == 10) {
-        // This causes all threads fixed on core1 to stop running in about 50% of times tried.
-        vTaskCoreAffinitySet(loop2Handle, CORE_1);
+    if (_loop0[0] >= 10 && _loop0[0] % 5 == 0) {
+        // This causes loop 2 to switch it's affinity every 10 seconds. This is the event to trigger the bug.
+        vTaskSuspend(loop2Handle);
+        vTaskCoreAffinitySet(loop2Handle, _loop0[0] % 10 == 0 ? CORE_1: CORE_0);
+        vTaskResume(loop2Handle);
     }
   }
 }
@@ -141,27 +147,54 @@ void loop2(void *pvPramaters)
   {
     //_loop[2]++;
     rp2040.cpuid() == 0 ? _loop0[2]++ : _loop1[2]++;
+    
     char *tmp;
 
     semphrTakeConditional(useMutexOnMalloc, xSemaphoreMalloc);
+#if BUSY_MALLOC == 1
     tmp = (char *)malloc(10 * sizeof(char));
+#endif
+#if BUSY_LOOP == 1
+    busyLoop();
+#endif
     semphrGiveConditional(useMutexOnMalloc, xSemaphoreMalloc);
 
+#if BUSY_MALLOC == 1
     strcpy(tmp, "bar");
-
+#endif
+#if BUSY_LOOP == 1
+    busyLoop();
+#endif
+    
     if (tryRealloc)
     {
       semphrTakeConditional(useMutexOnRealloc, xSemaphoreRealloc);
+#if BUSY_MALLOC == 1
       tmp = (char *)realloc(tmp, 20 * sizeof(char));
+#endif
+#if BUSY_LOOP == 1
+    busyLoop();
+#endif
       semphrGiveConditional(useMutexOnRealloc, xSemaphoreRealloc);
+#if BUSY_MALLOC == 1
       strcat(tmp, "_realloc");
+#endif
+#if BUSY_LOOP == 1
+    busyLoop();
+#endif
     }
-
+    
     semphrTakeConditional(useMutexOnFree, xSemaphoreFree);
+#if BUSY_MALLOC == 1
     free(tmp);
+#endif
+#if BUSY_LOOP == 1
+    busyLoop();
+#endif
     semphrGiveConditional(useMutexOnFree, xSemaphoreFree); 
     
     delay(DELAY);
+    
   }
 }
 
@@ -343,5 +376,13 @@ void semphrGiveConditional(bool useMutexOn, SemaphoreHandle_t xSemaphore)
   if (useMutexOn)
   {
     xSemaphoreGive(xSemaphore);
+  }
+}
+
+void busyLoop() {
+  int i;
+  float j = 1.5f;
+  for (i = 0; i++; i < 1000) {
+    j = j * 2.0f;
   }
 }
