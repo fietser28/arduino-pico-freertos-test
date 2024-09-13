@@ -101,9 +101,7 @@ void loop()
 
     if (_loop0[0] >= 10 && _loop0[0] % 5 == 0) {
         // This causes loop 2 to switch it's affinity every 10 seconds. This is the event to trigger the bug.
-        vTaskSuspend(loop2Handle);
         vTaskCoreAffinitySet(loop2Handle, _loop0[0] % 10 == 0 ? CORE_1: CORE_0);
-        vTaskResume(loop2Handle);
     }
   }
 }
